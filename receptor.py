@@ -2,50 +2,58 @@ import socket
 import sys
 import threading
 import pickle
+import config
+from bitarray import bitarray
 
 RUNNING = False
 
-BUFF_SIZE = 1000
-
-if len(sys.argv) != 3:
-    print("usage: client.py <server-ip> <port>")
+if len(sys.argv) <= 1:
+    print("Usage: receptor.py <port>")
     sys.exit()
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
 
-server_ip = sys.argv[1]
-server_port = int(sys.argv[2])
+    server_port = int(sys.argv[1])
+    server_addr = (config.SERVER_DEFAULT_IP, server_port)
 
-server_address = (server_ip, server_port)
+    sock.bind(server_addr)
+    sock.listen(5)
 
+    messenger = False
 
-def receptor_thread():
-    # this function handles display
-    global RUNNING
-    while not RUNNING:
-        response, _ = sock.recvfrom(BUFF_SIZE)
+    while not messenger:
+        print("Waiting for messenger... ")
+        conn, addr = sock.accept()
+        print(conn, addr)
+
+        messenger = True if conn and addr else False
+
+    print("Messenger ready!")
+
+    while True:
+        # Start to receive the messege
+        print("Waiting for message...")
+        response = conn.recv(config.BUFF_SIZE)
+
+        print("response:", response)
+
+        bitarr = bitarray()
+        bitarr.frombytes(response)
 
         # Parse bytes response to string
         # response = response.decode()
-        byteMessage = response.tobytes()
+        byte_msg = bitarr.tobytes()
+        print("byte_msg:", byte_msg)
+
+        # byteMessage = response.tobytes()
         
         #Decode response
-        message = pickle.loads(byteMessage)
-        print(message)
-        #Verify response
+        message = pickle.loads(byte_msg)
+        print("Messege:", message)
+            #Verify response
 
-        #Print response
-        
-
-def start():
-    # this function launches the game
-    receptor = threading.Thread(target=receptor_thread)
-    receptor.daemon = True
-    receptor.start()
-
-def initialize():
-    print(f"Conectandose al server en el puerto: {server_ip}...")
-    sock.connect(server_address)
-
-initialize()
-start()
+            #Print response
+    
+    
+    # Close connection
+    sock.close()

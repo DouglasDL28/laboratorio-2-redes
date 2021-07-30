@@ -3,10 +3,10 @@ import sys
 import threading
 import pickle
 from bitarray import bitarray
+import config
 
-RUNNING = False
+RUNNING = True
 
-BUFF_SIZE = 1000
 
 if len(sys.argv) != 3:
     print("usage: client.py <server-ip> <port>")
@@ -17,15 +17,17 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_ip = sys.argv[1]
 server_port = int(sys.argv[2])
 
-server_address = (server_ip, server_port)
+if sys.argv[1] == "default":
+    server_ip = config.SERVER_DEFAULT_IP
+
+server_addr = (server_ip, server_port)
 
 def sender_thread():
     
-
     global RUNNING
-    while not RUNNING:
+    while RUNNING:
         
-        message = input('Ingrese un mensaje')
+        message = str(input('Input the messege:'))
 
         #Pickle para serializar el mensaje
         # message = input('Ingrese un mensaje')
@@ -40,11 +42,7 @@ def sender_thread():
 
         sock.send(bitarr)
 
-        print("Enviando el movimiento al server...")
-        # board.move_piece(best_move[0], best_move[1])
-        # board.change_turn()
-
-        # a = 1 # TODO: remove when you have done the above task...
+        print("Sending messege to receptor...")
         
 
 def start():
@@ -55,7 +53,8 @@ def start():
 
 def initialize():
     print(f"Conectandose al server en el puerto: {server_ip}...")
-    sock.connect(server_address)
+    sock.connect(server_addr)
 
 initialize()
-start()
+# start()
+sender_thread()
