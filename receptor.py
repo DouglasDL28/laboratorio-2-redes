@@ -25,7 +25,7 @@ def coding(biteMessage):
     biteMessage = biteMessage.tobytes()
 
     #Se convierte a texto
-    return ''.join(chr(i) for i in biteMessage)
+    return ''.join(map(chr,biteMessage))
 
 def verify(message):
     #Se aplican los algoritmos de detección y corrección
