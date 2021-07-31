@@ -4,6 +4,7 @@ import threading
 import pickle
 from bitarray import bitarray
 import config
+import random
 
 RUNNING = True
 
@@ -22,25 +23,47 @@ if sys.argv[1] == "default":
 
 server_addr = (server_ip, server_port)
 
+def app():
+    return str(input('Input the message:'))
+
+def verify(message):
+    #Se convierte el mensaje a Ascii
+    asciiMessage = message.encode('utf-8')
+
+    #Se convierte a bitarray  
+    bitarr = bitarray()
+    bitarr.frombytes(asciiMessage)
+    return bitarr
+
+def noice(message):
+    #Se cambian algunos bites para agregarle ruido al mensaje
+    for i in range(0, len(message)):
+        if random.random() <= 0.005:
+            message[i] = message[i] ^ 1
+    messageWithNoice = message
+    return messageWithNoice
+
+def trans(message):
+    #Pickle para serializar el mensaje
+    pickleMessage = pickle.dumps(message)
+    sock.send(pickleMessage)
+
 def sender_thread():
     
     global RUNNING
     while RUNNING:
         
-        message = str(input('Input the messege:'))
+        #Aplicación
+        message = app()
 
-        #Pickle para serializar el mensaje
-        # message = input('Ingrese un mensaje')
+        #Verificación
+        secureMessage = verify(message)
 
-        pickleMessage = pickle.dumps(message)
+        #Ruido
+        messageWithNoice = noice(secureMessage)
 
-        bitarr = bitarray()
-        bitarr.frombytes(pickleMessage)
-        
-
-        #Agragar ruido al binario
-
-        sock.send(bitarr)
+        #Transmisión
+        trans(messageWithNoice)
 
         print("Sending messege to receptor...")
         

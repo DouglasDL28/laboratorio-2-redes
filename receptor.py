@@ -11,6 +11,32 @@ if len(sys.argv) <= 1:
     print("Usage: receptor.py <port>")
     sys.exit()
 
+def trans(conn):
+    #Se recibe el mensaje
+    response = conn.recv(config.BUFF_SIZE)
+    
+    #Se deserealiza el mensaje
+    message = pickle.loads(response)
+
+    return message
+
+def coding(biteMessage):
+    #Se convierte el mensaje de bitarray a bytes 
+    biteMessage = biteMessage.tobytes()
+
+    #Se convierte a texto
+    return ''.join(chr(i) for i in biteMessage)
+
+def verify(message):
+    #Se aplican los algoritmos de detección y corrección
+    #TODO
+
+    return message
+
+def app(message):
+    #Print response
+    print("Message:", message)
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
 
     server_port = int(sys.argv[1])
@@ -31,28 +57,19 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
     print("Messenger ready!")
 
     while True:
-        # Start to receive the messege
-        print("Waiting for message...")
-        response = conn.recv(config.BUFF_SIZE)
-
-        print("response:", response)
-
-        bitarr = bitarray()
-        bitarr.frombytes(response)
-
-        # Parse bytes response to string
-        # response = response.decode()
-        byte_msg = bitarr.tobytes()
-        print("byte_msg:", byte_msg)
-
-        # byteMessage = response.tobytes()
         
-        #Decode response
-        message = pickle.loads(byte_msg)
-        print("Messege:", message)
-            #Verify response
+        #Recibir objeto
+        print("Waiting for message...")
+        biteResponse = trans(conn)
 
-            #Print response
+        #Codificación
+        byteResponse = coding(biteResponse)
+
+        #Verificación
+        message = verify(byteResponse)
+
+        #Aplicación
+        app(message)
     
     
     # Close connection
