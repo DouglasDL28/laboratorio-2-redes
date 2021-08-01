@@ -17,14 +17,17 @@ if len(sys.argv) <= 1:
 def trans(conn):
     #Se recibe el mensaje
     response = conn.recv(config.BUFF_SIZE)
+
+    return response
+
+
+def coding(response):
     
     #Se deserealiza el mensaje (bitarray)
-    message = pickle.loads(response)
+    return pickle.loads(response)
 
-    return message
-
-
-def coding(message):
+def verify(message):
+    
     #Se aplican los algoritmos de detección y corrección
     if config.ALGORITHM == "crc32":
         message, isCorrupt = crc32Check(message)
@@ -47,20 +50,10 @@ def coding(message):
 
         message = rm_r_bits(message)
 
-
-    #Se convierte a texto
-    # return ''.join(map(chr,biteMessage))
-    return message
-
-
-def verify(message):
     message = bitarray.tobytes(message)
 
+    #Se retorna el mensaje en texto plano
     return str(message.decode())
-
-# def coding(biteMessage):
-#     #Se convierte el mensaje de bitarray a bytes 
-#     return biteMessage.tobytes()
 
 
 def app(message):
