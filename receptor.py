@@ -5,6 +5,7 @@ import pickle
 import config
 from bitarray import bitarray
 from hamming import hamming_verification, rm_r_bits, calc_r_bits
+from crc32 import crc32Calculator
 
 RUNNING = False
 
@@ -39,6 +40,10 @@ def coding(message):
 
         message = rm_r_bits(message)
 
+    elif config.ALGORITHM == "crc32":
+        crc32 = crc32Calculator(message)
+        print(crc32)
+
     #Se convierte a texto
     # return ''.join(map(chr,biteMessage))
     return message
@@ -48,6 +53,10 @@ def verify(message):
     message = bitarray.tobytes(message)
 
     return str(message.decode())
+
+# def coding(biteMessage):
+#     #Se convierte el mensaje de bitarray a bytes 
+#     return biteMessage.tobytes()
 
 
 def app(message):
