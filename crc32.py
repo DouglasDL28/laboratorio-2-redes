@@ -38,7 +38,7 @@ def crc32Check(bitarrayStr: bitarray):
     for byte in bytearrayStr:
         crc32 = table[(byte ^ crc32) & 0xFF] ^ (crc32 >> 8)
     #Se finaliza el valor de CRC-32 invirtiendo todos los bits
-    return bitarrayStr[:len(bitarrayStr) - 32], bitarray(int2ba(crc32 ^ 0xFFFFFFFF)) == bytearrayCRC32Check
+    return bitarrayStr[:len(bitarrayStr) - 32], bitarray(int2ba(crc32 ^ 0xFFFFFFFF)) != bytearrayCRC32Check
 
 def tryAlgorithm():
     message = b'Un mensaje'

@@ -28,7 +28,10 @@ def coding(message):
     #Se aplican los algoritmos de detección y corrección
     if config.ALGORITHM == "crc32":
         message, isCorrupt = crc32Check(message)
-        print(isCorrupt)
+        if isCorrupt:
+            print("\tCRC32 - Error detected.")
+        else:
+            print(f"\tCRC32 - No error detected.")
 
     if config.ALGORITHM == 'hamming':
         r = calc_r_bits(len(message))
