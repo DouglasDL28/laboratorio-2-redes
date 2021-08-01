@@ -9,7 +9,7 @@ def is_power_of_two(x):
     return (x != 0) and ((x & (x - 1)) == 0)
 
 
-def r_bits(m):
+def calc_r_bits(m):
     """ Find the number r, that satisfies (m + r + 1) ≤ 2^r """
 
     for r in range(m):
@@ -52,6 +52,7 @@ def rm_r_bits(data:bitarray):
 
     return res
 
+
 def calc_parity_bits(arr, r):
     """ Calculates parity value in redundant values' positions. """
 
@@ -74,7 +75,7 @@ def calc_parity_bits(arr, r):
     return arr
 
 
-def detect_error(arr, r):
+def hamming_verification(arr, r):
     n = len(arr)
     res = 0
 
@@ -92,6 +93,16 @@ def detect_error(arr, r):
     # Convert binary to decimal
     return int(str(res), 2)
 
+
+def hamming_code(data:bitarray):
+    """ Create hamming code from data. """
+    m = len(data)
+    r = calc_r_bits(m)
+    arr = pos_r_bits(data, r)
+    arr = calc_parity_bits(arr, r)
+
+    return arr
+
 def hamming_test():
 
     # Enter the data to be transmitted
@@ -100,7 +111,7 @@ def hamming_test():
 
     # Calculate the no of Redundant Bits Required
     m = len(data)
-    r = r_bits(m)
+    r = calc_r_bits(m)
     print("redundant bits needed:", r)
 
 
@@ -118,16 +129,22 @@ def hamming_test():
     # 10101001110 -> 11101001110, error in 10th position.
 
     arr = bitarray('10101001110')
-    arr = bitarray('11101001110')
+    arr = bitarray('11101011110')
     print("Error Data is:", arr)
-    correction = detect_error(arr, r)
+    r2 = calc_r_bits(len(arr))
+    print(r2)
+    correction = hamming_verification(arr, r)
 
     if correction:
-        print("The position of error is:", str(correction))
+        if correction > len(arr):
+            print("More than one error detected")
+        else:
+            print("The position of error is:", str(correction))
 
-        arr.invert(-1*(correction))
+            arr.invert(-1*(correction))
 
         print(rm_r_bits(arr))
+
     else:
         print("No error")
         print(rm_r_bits(arr))

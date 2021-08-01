@@ -5,6 +5,8 @@ import pickle
 from bitarray import bitarray
 import config
 import random
+import config
+from hamming import hamming_code
 
 RUNNING = True
 
@@ -27,12 +29,16 @@ def app():
     return str(input('Input the message:'))
 
 def verify(message):
-    #Se convierte el mensaje a Ascii
-    asciiMessage = message.encode('utf-8')
+    #Se convierte el mensaje a ASCII
+    ascii_msg = message.encode('ascii')
 
     #Se convierte a bitarray  
     bitarr = bitarray()
-    bitarr.frombytes(asciiMessage)
+    bitarr.frombytes(ascii_msg)
+
+    if config.ALGORITHM == "hamming":
+        bitarr = hamming_code(bitarr)
+
     return bitarr
 
 def noice(message):
@@ -65,7 +71,7 @@ def sender_thread():
         #Transmisión
         trans(messageWithNoice)
 
-        print("Sending messege to receptor...")
+        print("Sending message to receptor...")
         
 
 def start():

@@ -4,6 +4,7 @@ import threading
 import pickle
 import config
 from bitarray import bitarray
+from hamming import hamming_verification, rm_r_bits, calc_r_bits
 
 RUNNING = False
 
@@ -11,31 +12,48 @@ if len(sys.argv) <= 1:
     print("Usage: receptor.py <port>")
     sys.exit()
 
+
 def trans(conn):
     #Se recibe el mensaje
     response = conn.recv(config.BUFF_SIZE)
     
-    #Se deserealiza el mensaje
+    #Se deserealiza el mensaje (bitarray)
     message = pickle.loads(response)
 
     return message
 
-def coding(biteMessage):
-    #Se convierte el mensaje de bitarray a bytes 
-    biteMessage = biteMessage.tobytes()
+
+def coding(message):
+    #Se aplican los algoritmos de detección y corrección
+    if config.ALGORITHM == 'hamming':
+        r = calc_r_bits(len(message))
+        error = hamming_verification(message, r)
+        if error:
+            if error > len(message):
+                print("\tHAMMING - More than one error detected.")
+            else:
+                print(f"\tHAMMING - Found error in {error}. Corrected.")
+                message.invert(-1*error)
+        else:
+            print("\tHAMMING - No error detected.")
+
+        message = rm_r_bits(message)
 
     #Se convierte a texto
-    return ''.join(map(chr,biteMessage))
+    # return ''.join(map(chr,biteMessage))
+    return message
+
 
 def verify(message):
-    #Se aplican los algoritmos de detección y corrección
-    #TODO
+    message = bitarray.tobytes(message)
 
-    return message
+    return str(message.decode())
+
 
 def app(message):
     #Print response
     print("Message:", message)
+
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
 
