@@ -22,18 +22,35 @@ def pos_r_bits(data:bitarray, r:int):
 
     m = len(data)
 
-    new_bitarr = bitarray()
+    res = bitarray()
 
     # If position is power of 2 then insert '0'
     # Else append the data
     for i in range(1, m+r+1):
         if is_power_of_two(i):
-            new_bitarr.insert(0, 0)
+            res.insert(0, 0)
         else:
-            new_bitarr.insert(0, data.pop())
+            res.insert(0, data.pop())
 
-    return new_bitarr
+    return res
 
+
+def rm_r_bits(data:bitarray):
+    """ Remove redundant bits. """
+
+    n = len(data)
+
+    res = bitarray()
+
+    # If position is power of 2 skip redundant bit
+    # Else append the data
+    for i in range(1, n+1):
+        if not is_power_of_two(i):
+            res.insert(0, data.pop())
+        else:
+            data.pop()
+
+    return res
 
 def calc_parity_bits(arr, r):
     """ Calculates parity value in redundant values' positions. """
@@ -44,13 +61,11 @@ def calc_parity_bits(arr, r):
     for i in range(r):
         val = 0
         for j in range(1, n + 1):
-
             # If position has 1 in ith significant
             # position then Bitwise OR the array value
             # to find parity bit value.
             if(j & (2**i) == (2**i)):
                 val = val ^ int(arr[-1 * j])
-                # -1 * j is given since array is reversed
 
         # Add parity value in correct position
         # (0 to n - 2^r) + parity bit + (n - 2^r + 1 to n)
@@ -102,10 +117,21 @@ def hamming_test():
     # Stimulate error in transmission by changing a bit value.
     # 10101001110 -> 11101001110, error in 10th position.
 
-    arr = '11101001110'
+    arr = bitarray('10101001110')
+    arr = bitarray('11101001110')
     print("Error Data is:", arr)
     correction = detect_error(arr, r)
-    print("The position of error is:", str(correction))
+
+    if correction:
+        print("The position of error is:", str(correction))
+
+        arr.invert(-1*(correction))
+
+        print(rm_r_bits(arr))
+    else:
+        print("No error")
+        print(rm_r_bits(arr))
+
 
 if __name__ == "__main__":
     hamming_test()
