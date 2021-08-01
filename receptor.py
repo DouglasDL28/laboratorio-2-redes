@@ -18,14 +18,15 @@ if len(sys.argv) <= 1:
 def trans(conn):
     #Se recibe el mensaje
     response = conn.recv(config.BUFF_SIZE)
-    
+
+    return response
+
+def coding(response):
+    response = pickle.loads(response)
     #Se deserealiza el mensaje (bitarray)
-    message = pickle.loads(response)
+    return response, len(response)
 
-    return message, len(message)
-
-
-def coding(message):
+def verify(message):
     """ Se aplican los algoritmos de detección y corrección """
 
     r = None
@@ -51,20 +52,9 @@ def coding(message):
 
         message = rm_r_bits(message)
 
-
-    #Se convierte a texto
-    # return ''.join(map(chr,biteMessage))
-    return message, error, r
-
-
-def verify(message):
     message = bitarray.tobytes(message)
 
-    return str(message.decode("ascii", errors='ignore'))
-
-# def coding(biteMessage):
-#     #Se convierte el mensaje de bitarray a bytes 
-#     return biteMessage.tobytes()
+    return str(message.decode("ascii", errors='ignore')), error, r
 
 
 def app(message):
@@ -95,13 +85,13 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         
         #Recibir objeto
         print("Waiting for message...")
-        biteResponse, msg_len = trans(conn)
+        response = trans(conn)
 
         #Codificación
-        byteResponse, error, redundancy = coding(biteResponse)
+        byteResponse, msg_len = coding(response)
 
         #Verificación
-        message = verify(byteResponse)
+        message, error, redundancy = verify(byteResponse)
 
         #Aplicación
         app(message)
