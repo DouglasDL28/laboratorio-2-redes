@@ -1,3 +1,4 @@
+from os import error
 import socket
 import sys
 import pickle
@@ -7,6 +8,7 @@ from hamming import hamming_verification, rm_r_bits, calc_r_bits
 from crc32 import crc32Check
 
 RUNNING = False
+
 
 if len(sys.argv) <= 1:
     print("Usage: receptor.py <port>")
@@ -20,14 +22,17 @@ def trans(conn):
     #Se deserealiza el mensaje (bitarray)
     message = pickle.loads(response)
 
-    return message
+    return message, len(message)
 
 
 def coding(message):
-    #Se aplican los algoritmos de detección y corrección
+    """ Se aplican los algoritmos de detección y corrección """
+
+    r = None
+
     if config.ALGORITHM == "crc32":
-        message, isCorrupt = crc32Check(message)
-        if isCorrupt:
+        message, error = crc32Check(message)
+        if error:
             print("\tCRC32 - Error detected.")
         else:
             print(f"\tCRC32 - No error detected.")
@@ -49,13 +54,13 @@ def coding(message):
 
     #Se convierte a texto
     # return ''.join(map(chr,biteMessage))
-    return message
+    return message, error, r
 
 
 def verify(message):
     message = bitarray.tobytes(message)
 
-    return str(message.decode())
+    return str(message.decode("ascii", errors='ignore'))
 
 # def coding(biteMessage):
 #     #Se convierte el mensaje de bitarray a bytes 
@@ -90,16 +95,28 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         
         #Recibir objeto
         print("Waiting for message...")
-        biteResponse = trans(conn)
+        biteResponse, msg_len = trans(conn)
 
         #Codificación
-        byteResponse = coding(biteResponse)
+        byteResponse, error, redundancy = coding(biteResponse)
 
         #Verificación
         message = verify(byteResponse)
 
         #Aplicación
         app(message)
+
+        if config.ALGORITHM == 'hamming':
+            error_det, error_corr = False, False
+            if error:
+                error_det, error_corr = True, True
+                if error > msg_len:
+                    error_corr = False
+
+            csv_row = f"\n{config.PROBABILITY},{msg_len},{config.PROBABILITY},{bool(error)},{error_corr},{error_det},{redundancy}"
+
+        with open('hamming.csv','a') as fd:
+            fd.write(csv_row)
     
     
     # Close connection
