@@ -1,6 +1,5 @@
 import socket
 import sys
-import threading
 import pickle
 import config
 from bitarray import bitarray
