@@ -7,6 +7,7 @@ import config
 import random
 import config
 from hamming import hamming_code
+from crc32 import crc32Calculator
 
 RUNNING = True
 
@@ -38,13 +39,16 @@ def verify(message):
 
     if config.ALGORITHM == "hamming":
         bitarr = hamming_code(bitarr)
+    
+    if config.ALGORITHM == "crc32":
+        bitarr = crc32Calculator(bitarr)
 
     return bitarr
 
 def noice(message):
     #Se cambian algunos bites para agregarle ruido al mensaje
     for i in range(0, len(message)):
-        if random.random() <= 0.005:
+        if random.random() <= config.PROBABILITY:
             message[i] = message[i] ^ 1
     messageWithNoice = message
     return messageWithNoice

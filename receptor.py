@@ -5,7 +5,7 @@ import pickle
 import config
 from bitarray import bitarray
 from hamming import hamming_verification, rm_r_bits, calc_r_bits
-from crc32 import crc32Calculator
+from crc32 import crc32Check
 
 RUNNING = False
 
@@ -26,6 +26,10 @@ def trans(conn):
 
 def coding(message):
     #Se aplican los algoritmos de detección y corrección
+    if config.ALGORITHM == "crc32":
+        message, isCorrupt = crc32Check(message)
+        print(isCorrupt)
+
     if config.ALGORITHM == 'hamming':
         r = calc_r_bits(len(message))
         error = hamming_verification(message, r)
@@ -40,9 +44,6 @@ def coding(message):
 
         message = rm_r_bits(message)
 
-    elif config.ALGORITHM == "crc32":
-        crc32 = crc32Calculator(message)
-        print(crc32)
 
     #Se convierte a texto
     # return ''.join(map(chr,biteMessage))
