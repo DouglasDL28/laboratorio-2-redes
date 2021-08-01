@@ -4,6 +4,7 @@ import threading
 import pickle
 import config
 from bitarray import bitarray
+from crc32 import crc32Calculator
 
 RUNNING = False
 
@@ -22,16 +23,17 @@ def trans(conn):
 
 def coding(biteMessage):
     #Se convierte el mensaje de bitarray a bytes 
-    biteMessage = biteMessage.tobytes()
-
-    #Se convierte a texto
-    return ''.join(map(chr,biteMessage))
+    return biteMessage.tobytes()
 
 def verify(message):
     #Se aplican los algoritmos de detección y corrección
     #TODO
+    #Detección de errores con el algoritmo CRC-32
+    crc32 = crc32Calculator(message)
+    print(crc32)
 
-    return message
+    #Se convierte a texto
+    return ''.join(map(chr,message))
 
 def app(message):
     #Print response
