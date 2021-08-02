@@ -3,12 +3,12 @@ import socket
 import sys
 import pickle
 import config
+import time
 from bitarray import bitarray
 from hamming import hamming_verification, rm_r_bits, calc_r_bits
 from crc32 import crc32Check
 
 RUNNING = False
-
 
 if len(sys.argv) <= 1:
     print("Usage: receptor.py <port>")
@@ -18,13 +18,12 @@ if len(sys.argv) <= 1:
 def trans(conn):
     #Se recibe el mensaje
     response = conn.recv(config.BUFF_SIZE)
-
     return response
 
 def coding(response):
     response = pickle.loads(response)
     #Se deserealiza el mensaje (bitarray)
-    return response, len(response)
+    return response
 
 def verify(message):
     """ Se aplican los algoritmos de detección y corrección """
@@ -54,7 +53,7 @@ def verify(message):
 
     message = bitarray.tobytes(message)
 
-    return str(message.decode("ascii", errors='ignore')), error, r
+    return str(message.decode("ascii", errors='ignore')), error, r, len(message.decode("ascii", errors='ignore'))
 
 
 def app(message):
@@ -85,16 +84,17 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
         
         #Recibir objeto
         print("Waiting for message...")
-        response = trans(conn)
-
+        response = trans(conn)    
+        start = time.time()
         #Codificación
-        byteResponse, msg_len = coding(response)
+        byteResponse = coding(response)
 
         #Verificación
-        message, error, redundancy = verify(byteResponse)
+        message, error, redundancy, msg_len = verify(byteResponse)
 
         #Aplicación
         app(message)
+        end = time.time()
 
         if config.ALGORITHM == 'hamming':
             error_det, error_corr = False, False
@@ -105,8 +105,14 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
 
             csv_row = f"\n{config.PROBABILITY},{msg_len},{config.PROBABILITY},{bool(error)},{error_corr},{error_det},{redundancy}"
 
-        with open('./tests/hamming/hamming.csv','a') as fd:
-            fd.write(csv_row)
+            with open('./tests/hamming/hamming.csv','a') as fd:
+                fd.write(csv_row)
+        
+        if config.ALGORITHM == 'crc32':
+            csv_row = f"\n{config.PROBABILITY},{msg_len},{config.ALGORITHM},{bool(error)},{end-start}"
+
+            with open('./tests/crc32/crc32.csv','a') as fd:
+                fd.write(csv_row)
     
     
     # Close connection
