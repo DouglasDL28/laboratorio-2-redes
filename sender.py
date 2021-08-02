@@ -2,9 +2,12 @@ import socket
 import sys
 import threading
 import pickle
-from bitarray import bitarray
 import config
 import random
+import string
+
+from bitarray import bitarray
+
 import config
 from hamming import hamming_code
 from crc32 import crc32Calculator
@@ -26,8 +29,21 @@ if sys.argv[1] == "default":
 
 server_addr = (server_ip, server_port)
 
+
+def rand_string(letters):
+    string_len = random.randint(1, 140)
+
+    return ''.join(random.choice(letters) for i in range(string_len))
+
+
+
+
 def app():
-    return str(input('Input the message:'))
+    if config.TESTING:
+        letters = string.ascii_letters
+        return rand_string(letters)
+    else:
+        return str(input('Input the message:'))
 
 def verify(message):
     #Se convierte el mensaje a ASCII

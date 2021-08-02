@@ -105,7 +105,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
 
             csv_row = f"\n{config.PROBABILITY},{msg_len},{config.PROBABILITY},{bool(error)},{error_corr},{error_det},{redundancy}"
 
-        with open('hamming.csv','a') as fd:
+        with open('./tests/hamming/hamming.csv','a') as fd:
             fd.write(csv_row)
     
     
